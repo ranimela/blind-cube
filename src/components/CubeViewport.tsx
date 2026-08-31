@@ -9,6 +9,7 @@ interface CubeViewportProps {
   mode: SpeffzMode;
   activeSequence: string;
   selectedStickerId?: string | null;
+  stickerColors?: Record<string, string>;
   onStickerClick: (sticker: SpeffzSticker) => void;
 }
 
@@ -99,6 +100,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
   mode,
   activeSequence: _activeSequence,
   selectedStickerId,
+  stickerColors,
   onStickerClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -187,7 +189,8 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     SPEFFZ_STICKERS.forEach((st) => {
       const isVisible = isStickerVisible(st);
       const isHighlighted = selectedStickerId === st.id;
-      const texture = createStickerTexture(st.letter, st.faceColor, st.pieceType, isVisible, isHighlighted);
+      const color = stickerColors?.[st.id] ?? st.faceColor;
+      const texture = createStickerTexture(st.letter, color, st.pieceType, isVisible, isHighlighted);
       const material = new THREE.MeshStandardMaterial({
         map: texture,
         roughness: 0.35,
@@ -244,7 +247,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     };
   }, []);
 
-  // Update textures whenever Mode, selectedStickerId, or Highlights change
+  // Update textures whenever Mode, selectedStickerId, or stickerColors change
   useEffect(() => {
     meshesRef.current.forEach((mesh) => {
       const st = mesh.userData.sticker as SpeffzSticker;
@@ -252,7 +255,8 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
 
       const isVisible = isStickerVisible(st);
       const isHighlighted = selectedStickerId === st.id;
-      const newTexture = createStickerTexture(st.letter, st.faceColor, st.pieceType, isVisible, isHighlighted);
+      const color = stickerColors?.[st.id] ?? st.faceColor;
+      const newTexture = createStickerTexture(st.letter, color, st.pieceType, isVisible, isHighlighted);
 
       const mat = mesh.material as THREE.MeshStandardMaterial;
       if (mat.map) {
@@ -261,7 +265,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
       mat.map = newTexture;
       mat.needsUpdate = true;
     });
-  }, [mode, selectedStickerId, isStickerVisible]);
+  }, [mode, selectedStickerId, isStickerVisible, stickerColors]);
 
   // Pointer event for Raycasting and clicking stickers without triggering on drag
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -383,7 +387,10 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
       <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10">
         {hoveredSticker ? (
           <div className="px-4 py-2.5 bg-white/95 border border-slate-100 rounded-2xl backdrop-blur-md shadow-lg flex items-center gap-3">
-            <span className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ backgroundColor: hoveredSticker.faceColor }} />
+            <span
+              className="w-3.5 h-3.5 rounded-full shadow-sm"
+              style={{ backgroundColor: stickerColors?.[hoveredSticker.id] ?? hoveredSticker.faceColor }}
+            />
             <div className="flex items-center gap-2">
               <span className="font-mono font-bold text-[#1E3A8A] text-base">
                 Target: {hoveredSticker.letter}

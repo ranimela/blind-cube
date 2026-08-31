@@ -3,9 +3,11 @@ import { SpeffzMode, SpeffzSticker } from './types/speffz';
 import { Header } from './components/Header';
 import { CubeViewport } from './components/CubeViewport';
 import { SequenceInput } from './components/SequenceInput';
+import { TrainingControls } from './components/TrainingControls';
 import { MnemonicList } from './components/MnemonicList';
 import { ReferenceModal } from './components/ReferenceModal';
 import { sanitizeSpeffzSequence, parseAndChunkSequence } from './services/mnemonicService';
+import { getSolvedState, generateRandomScramble } from './utils/cubeScrambler';
 
 // Sample drills for quick practice
 const SAMPLE_DRILLS = [
@@ -23,6 +25,10 @@ export const App: React.FC = () => {
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
   const [customOverrides, setCustomOverrides] = useState<Record<string, string>>({});
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  // Scramble and Cube State Management
+  const [scramble, setScramble] = useState<string>('');
+  const [stickerColors, setStickerColors] = useState<Record<string, string>>(() => getSolvedState());
 
   // Parse sequence into letter-pair chunks
   const chunks = useMemo(() => {
@@ -59,6 +65,17 @@ export const App: React.FC = () => {
     setSelectedStickerId(null);
   };
 
+  const handleScramble = () => {
+    const result = generateRandomScramble(20);
+    setScramble(result.scramble);
+    setStickerColors(result.stickerColors);
+  };
+
+  const handleResetScramble = () => {
+    setScramble('');
+    setStickerColors(getSolvedState());
+  };
+
   const handleUpdateOverride = (pair: string, customWord: string) => {
     setCustomOverrides((prev) => ({
       ...prev,
@@ -82,12 +99,22 @@ export const App: React.FC = () => {
       />
 
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 py-8 space-y-8">
-        {/* Top Section: 3D Cube Canvas */}
+        {/* Top Section: Training Scramble Controls */}
+        <section>
+          <TrainingControls
+            scramble={scramble}
+            onScramble={handleScramble}
+            onReset={handleResetScramble}
+          />
+        </section>
+
+        {/* 3D Cube Canvas */}
         <section>
           <CubeViewport
             mode={mode}
             activeSequence={sequence}
             selectedStickerId={selectedStickerId}
+            stickerColors={stickerColors}
             onStickerClick={handleStickerClick}
           />
         </section>
