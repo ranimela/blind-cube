@@ -15,7 +15,7 @@ function createStickerTexture(
   letter: string,
   faceColor: string,
   pieceType: string,
-  isDimmed: boolean,
+  shouldShowLetter: boolean,
   isHighlighted: boolean
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
@@ -23,8 +23,8 @@ function createStickerTexture(
   canvas.height = 256;
   const ctx = canvas.getContext('2d')!;
 
-  // Background base
-  ctx.fillStyle = '#0f172a'; // dark border/gap
+  // Background base (gap/border)
+  ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, 256, 256);
 
   // Rounded sticker rectangle
@@ -43,15 +43,13 @@ function createStickerTexture(
   ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
   ctx.lineTo(x + radius, y + h);
   ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-  ctx.lineTo(x, y + radius);
+  ctx.lineTo(x + radius, y);
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
 
   // Fill sticker color
   if (isHighlighted) {
     ctx.fillStyle = '#38bdf8'; // bright neon cyan highlight
-  } else if (isDimmed) {
-    ctx.fillStyle = '#1e293b'; // dimmed state
   } else {
     ctx.fillStyle = faceColor;
   }
@@ -59,22 +57,20 @@ function createStickerTexture(
 
   // Subtle sticker border/bevel
   ctx.lineWidth = isHighlighted ? 10 : 4;
-  ctx.strokeStyle = isHighlighted ? '#ffffff' : (isDimmed ? '#334155' : 'rgba(0, 0, 0, 0.25)');
+  ctx.strokeStyle = isHighlighted ? '#ffffff' : 'rgba(0, 0, 0, 0.25)';
   ctx.stroke();
 
-  // Speffz Letter Label
-  if (letter) {
-    ctx.font = 'bold 110px "JetBrains Mono", system-ui, sans-serif';
+  // Speffz Letter Label - ONLY render if active in selected mode
+  if (letter && shouldShowLetter) {
+    ctx.font = 'bold 115px "JetBrains Mono", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Letter text color
+    // Letter text color with high contrast
     if (isHighlighted) {
       ctx.fillStyle = '#090d16';
-    } else if (isDimmed) {
-      ctx.fillStyle = '#475569';
     } else {
-      // Choose contrasting text color based on sticker background
+      // Dark text on bright faces (U: white, D: yellow), White text on dark faces (F, B, L, R)
       if (faceColor === FACE_COLORS.U.hex || faceColor === FACE_COLORS.D.hex) {
         ctx.fillStyle = '#0f172a';
       } else {
@@ -84,10 +80,12 @@ function createStickerTexture(
 
     ctx.fillText(letter, 128, 130);
 
-    // Corner badge showing piece category
+    // Subtle piece type indicator (C for corner, E for edge)
     if (pieceType !== 'center') {
-      ctx.font = '600 24px "Plus Jakarta Sans", system-ui, sans-serif';
-      ctx.fillStyle = isHighlighted ? '#090d16' : (isDimmed ? '#334155' : 'rgba(0,0,0,0.4)');
+      ctx.font = '700 24px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillStyle = isHighlighted
+        ? '#090d16'
+        : (faceColor === FACE_COLORS.U.hex || faceColor === FACE_COLORS.D.hex ? 'rgba(15,23,42,0.4)' : 'rgba(255,255,255,0.45)');
       ctx.fillText(pieceType.toUpperCase()[0], 215, 45);
     }
   }
@@ -254,24 +252,33 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     });
   }, [mode, activeSequence, isStickerVisible]);
 
-  // Pointer and Raycaster interactions
+  // Pointer and Raycaster interactions with smooth 3-axis rotation
   const handlePointerDown = (e: React.PointerEvent) => {
     isDraggingRef.current = false;
     prevMousePos.current = { x: e.clientX, y: e.clientY };
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (e.buttons === 1 && cubeGroupRef.current) {
-      // Dragging / rotating cube across 3-axes
+    if (e.buttons === 1 && cubeGroupRef.current && cameraRef.current) {
       const dx = e.clientX - prevMousePos.current.x;
       const dy = e.clientY - prevMousePos.current.y;
 
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
         isDraggingRef.current = true;
       }
 
-      cubeGroupRef.current.rotation.y += dx * 0.009;
-      cubeGroupRef.current.rotation.x += dy * 0.009;
+      // Smooth 3-axis rotation relative to screen orientation
+      const rotSpeed = 0.008;
+      
+      // Rotate around Camera's UP axis (Y) and RIGHT axis (X)
+      const deltaRotationQuaternion = new THREE.Quaternion()
+        .setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * rotSpeed)
+        .multiply(
+          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * rotSpeed)
+        );
+
+      cubeGroupRef.current.quaternion.premultiply(deltaRotationQuaternion);
 
       prevMousePos.current = { x: e.clientX, y: e.clientY };
     } else if (containerRef.current && cameraRef.current && sceneRef.current) {
@@ -318,10 +325,10 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     isDraggingRef.current = false;
   };
 
-  // Preset quick views
+  // Preset quick views (sets clean Euler angles -> quaternion)
   const resetOrientation = () => {
     if (cubeGroupRef.current) {
-      cubeGroupRef.current.rotation.set(0.35, -0.6, 0);
+      cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(0.35, -0.6, 0, 'YXZ'));
     }
   };
 
@@ -329,16 +336,16 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     if (!cubeGroupRef.current) return;
     switch (view) {
       case 'UFR':
-        cubeGroupRef.current.rotation.set(0.35, -0.6, 0);
+        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(0.35, -0.6, 0, 'YXZ'));
         break;
       case 'UBL':
-        cubeGroupRef.current.rotation.set(0.35, 2.5, 0);
+        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(0.35, 2.5, 0, 'YXZ'));
         break;
       case 'DFR':
-        cubeGroupRef.current.rotation.set(-0.5, -0.6, 0);
+        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(-0.55, -0.6, 0, 'YXZ'));
         break;
       case 'DBL':
-        cubeGroupRef.current.rotation.set(-0.5, 2.5, 0);
+        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(-0.55, 2.5, 0, 'YXZ'));
         break;
     }
   };
