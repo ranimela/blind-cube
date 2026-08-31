@@ -61,8 +61,8 @@ function createStickerTexture(
   ctx.strokeStyle = isHighlighted ? '#ffffff' : 'rgba(0, 0, 0, 0.25)';
   ctx.stroke();
 
-  // Speffz Letter Label - ONLY render if active in selected mode
-  if (letter && shouldShowLetter) {
+  // Speffz Letter Label - ONLY render on non-center pieces and if active in selected mode
+  if (letter && shouldShowLetter && pieceType !== 'center') {
     ctx.font = 'bold 115px "JetBrains Mono", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -82,13 +82,11 @@ function createStickerTexture(
     ctx.fillText(letter, 128, 130);
 
     // Subtle piece type indicator (C for corner, E for edge)
-    if (pieceType !== 'center') {
-      ctx.font = '700 24px "Plus Jakarta Sans", system-ui, sans-serif';
-      ctx.fillStyle = isHighlighted
-        ? '#090d16'
-        : (faceColor === FACE_COLORS.U.hex || faceColor === FACE_COLORS.D.hex ? 'rgba(15,23,42,0.4)' : 'rgba(255,255,255,0.45)');
-      ctx.fillText(pieceType.toUpperCase()[0], 215, 45);
-    }
+    ctx.font = '700 24px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillStyle = isHighlighted
+      ? '#090d16'
+      : (faceColor === FACE_COLORS.U.hex || faceColor === FACE_COLORS.D.hex ? 'rgba(15,23,42,0.4)' : 'rgba(255,255,255,0.45)');
+    ctx.fillText(pieceType.toUpperCase()[0], 215, 45);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
