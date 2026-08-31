@@ -1,0 +1,31 @@
+{
+  "name": "blind-cube",
+  "version": "1.0.0",
+  "description": "3BLD Speffz Cube & Letter-Pair Mnemonic Generator",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "lucide-react": "^1.37.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@types/three": "^0.185.4",
+    "@vitejs/plugin-react": "^6.1.1",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  }
+}
