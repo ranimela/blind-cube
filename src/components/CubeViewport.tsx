@@ -8,6 +8,7 @@ import { RotateCcw, Sparkles } from 'lucide-react';
 interface CubeViewportProps {
   mode: SpeffzMode;
   activeSequence: string;
+  selectedStickerId?: string | null;
   onStickerClick: (sticker: SpeffzSticker) => void;
 }
 
@@ -96,7 +97,8 @@ function createStickerTexture(
 
 export const CubeViewport: React.FC<CubeViewportProps> = ({
   mode,
-  activeSequence,
+  activeSequence: _activeSequence,
+  selectedStickerId,
   onStickerClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -184,7 +186,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
 
     SPEFFZ_STICKERS.forEach((st) => {
       const isVisible = isStickerVisible(st);
-      const isHighlighted = activeSequence.endsWith(st.letter);
+      const isHighlighted = selectedStickerId === st.id;
       const texture = createStickerTexture(st.letter, st.faceColor, st.pieceType, isVisible, isHighlighted);
       const material = new THREE.MeshStandardMaterial({
         map: texture,
@@ -242,14 +244,14 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     };
   }, []);
 
-  // Update textures whenever Mode, Sequence, or Highlights change
+  // Update textures whenever Mode, selectedStickerId, or Highlights change
   useEffect(() => {
     meshesRef.current.forEach((mesh) => {
       const st = mesh.userData.sticker as SpeffzSticker;
       if (!st) return;
 
       const isVisible = isStickerVisible(st);
-      const isHighlighted = activeSequence.length > 0 && activeSequence[activeSequence.length - 1] === st.letter;
+      const isHighlighted = selectedStickerId === st.id;
       const newTexture = createStickerTexture(st.letter, st.faceColor, st.pieceType, isVisible, isHighlighted);
 
       const mat = mesh.material as THREE.MeshStandardMaterial;
@@ -259,7 +261,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
       mat.map = newTexture;
       mat.needsUpdate = true;
     });
-  }, [mode, activeSequence, isStickerVisible]);
+  }, [mode, selectedStickerId, isStickerVisible]);
 
   // Pointer event for Raycasting and clicking stickers without triggering on drag
   const handlePointerDown = (e: React.PointerEvent) => {

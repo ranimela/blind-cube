@@ -20,6 +20,7 @@ const SAMPLE_DRILLS = [
 export const App: React.FC = () => {
   const [mode, setMode] = useState<SpeffzMode>('full');
   const [sequence, setSequence] = useState<string>('ABCD');
+  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
   const [customOverrides, setCustomOverrides] = useState<Record<string, string>>({});
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -31,26 +32,31 @@ export const App: React.FC = () => {
   // Handle sequence change from text input
   const handleSequenceChange = (val: string) => {
     setSequence(sanitizeSpeffzSequence(val));
+    setSelectedStickerId(null); // Clear specific tile highlight when typed manually
   };
 
   // Handle clicking sticker on 3D cube
   const handleStickerClick = (sticker: SpeffzSticker) => {
     if (sticker.letter && sticker.pieceType !== 'center') {
       setSequence((prev) => prev + sticker.letter);
+      setSelectedStickerId(sticker.id);
     }
   };
 
   const handleClear = () => {
     setSequence('');
+    setSelectedStickerId(null);
   };
 
   const handleBackspace = () => {
     setSequence((prev) => prev.slice(0, -1));
+    setSelectedStickerId(null);
   };
 
   const handleSample = () => {
     const randomIndex = Math.floor(Math.random() * SAMPLE_DRILLS.length);
     setSequence(sanitizeSpeffzSequence(SAMPLE_DRILLS[randomIndex]));
+    setSelectedStickerId(null);
   };
 
   const handleUpdateOverride = (pair: string, customWord: string) => {
@@ -81,6 +87,7 @@ export const App: React.FC = () => {
           <CubeViewport
             mode={mode}
             activeSequence={sequence}
+            selectedStickerId={selectedStickerId}
             onStickerClick={handleStickerClick}
           />
         </section>
