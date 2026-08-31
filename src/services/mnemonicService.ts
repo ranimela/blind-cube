@@ -65,7 +65,10 @@ export function generateProceduralMnemonic(pair: string): string[] {
 /**
  * Looks up mnemonics for a 1 or 2 letter pair chunk.
  */
-export function lookupMnemonics(chunkStr: string): { primary: string; alternatives: string[] } {
+export function lookupMnemonics(
+  chunkStr: string,
+  dict: MnemonicDictionary = MNEMONIC_DICT
+): { primary: string; alternatives: string[] } {
   const clean = chunkStr.toUpperCase();
   
   if (clean.length === 1) {
@@ -76,7 +79,7 @@ export function lookupMnemonics(chunkStr: string): { primary: string; alternativ
     };
   }
 
-  const dictMatches = MNEMONIC_DICT[clean];
+  const dictMatches = dict[clean] || MNEMONIC_DICT[clean];
   if (dictMatches && dictMatches.length > 0) {
     return {
       primary: dictMatches[0],
@@ -96,7 +99,8 @@ export function lookupMnemonics(chunkStr: string): { primary: string; alternativ
  */
 export function parseAndChunkSequence(
   sequence: string,
-  customOverrides: Record<string, string> = {}
+  customOverrides: Record<string, string> = {},
+  dict: MnemonicDictionary = MNEMONIC_DICT
 ): LetterPairChunk[] {
   const clean = sanitizeSpeffzSequence(sequence);
   const chunks: LetterPairChunk[] = [];
@@ -108,7 +112,7 @@ export function parseAndChunkSequence(
     const secondLetter = isSingle ? undefined : pair[1];
     const id = `${pair}-${i}`;
 
-    const { primary, alternatives } = lookupMnemonics(pair);
+    const { primary, alternatives } = lookupMnemonics(pair, dict);
     const custom = customOverrides[pair];
 
     chunks.push({

@@ -1,17 +1,19 @@
 import React from 'react';
 import { SpeffzMode } from '../types/speffz';
-import { Box, Layers, HelpCircle } from 'lucide-react';
+import { Box, Layers, HelpCircle, BookOpen } from 'lucide-react';
 
 interface HeaderProps {
   mode: SpeffzMode;
   onModeChange: (mode: SpeffzMode) => void;
   onOpenHelp: () => void;
+  onOpenWordlist: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   mode,
   onModeChange,
   onOpenHelp,
+  onOpenWordlist,
 }) => {
   return (
     <header className="w-full bg-[#1E3A8A] text-white shadow-md sticky top-0 z-30">
@@ -68,6 +70,15 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Edges</span>
             </button>
           </div>
+
+          <button
+            onClick={onOpenWordlist}
+            className="min-h-[38px] px-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-sm"
+            title="Open Speffz Wordlist Manager"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span className="hidden sm:inline">Wordlist (📖)</span>
+          </button>
 
           <button
             onClick={onOpenHelp}

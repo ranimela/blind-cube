@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { LetterPairChunk } from '../types/speffz';
-import { Edit2, Check, X, Sparkles, BookOpen, AlertCircle, Copy } from 'lucide-react';
+import { Edit2, Check, X, Sparkles, BookOpen, AlertCircle, Copy, Target } from 'lucide-react';
 
 interface MnemonicListProps {
   chunks: LetterPairChunk[];
   onUpdateOverride: (pair: string, customWord: string) => void;
   onSelectAlternative: (pair: string, altWord: string) => void;
+  onOpenBlindRecall: () => void;
 }
 
 export const MnemonicList: React.FC<MnemonicListProps> = ({
   chunks,
   onUpdateOverride,
   onSelectAlternative,
+  onOpenBlindRecall,
 }) => {
   const [editingPair, setEditingPair] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
@@ -67,13 +69,24 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
           </h3>
         </div>
 
-        <button
-          onClick={handleCopyStory}
-          className="min-h-[36px] flex items-center gap-1.5 text-xs font-semibold text-[#1E3A8A] hover:bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl transition-all"
-        >
-          {copiedMemo ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-          <span>Copy Story</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenBlindRecall}
+            className="min-h-[36px] flex items-center gap-1.5 text-xs font-bold text-white bg-[#1E3A8A] hover:bg-[#1e40af] px-3.5 py-1.5 rounded-xl shadow-sm transition-all"
+            title="Start Blind Recall Test"
+          >
+            <Target className="w-3.5 h-3.5" />
+            <span>Test Memory (🎯)</span>
+          </button>
+
+          <button
+            onClick={handleCopyStory}
+            className="min-h-[36px] flex items-center gap-1.5 text-xs font-semibold text-[#1E3A8A] hover:bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl transition-all"
+          >
+            {copiedMemo ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>Copy Story</span>
+          </button>
+        </div>
       </div>
 
       {/* Grid of letter pair cards */}

@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { SpeffzMode, SpeffzSticker } from './types/speffz';
+import { SpeffzMode, SpeffzSticker, MnemonicDictionary } from './types/speffz';
 import { Header } from './components/Header';
 import { CubeViewport } from './components/CubeViewport';
 import { SequenceInput } from './components/SequenceInput';
 import { TrainingControls } from './components/TrainingControls';
 import { MnemonicList } from './components/MnemonicList';
 import { ReferenceModal } from './components/ReferenceModal';
+import { BlindRecallTest } from './components/BlindRecallTest';
+import { WordlistManagerModal } from './components/dictionary/WordlistManagerModal';
 import { sanitizeSpeffzSequence, parseAndChunkSequence } from './services/mnemonicService';
+import { loadDictionary, saveDictionary } from './services/dictionaryStorage';
 import { getSolvedState, generateRandomScramble } from './utils/cubeScrambler';
 
 // Sample drills for quick practice
@@ -24,16 +27,19 @@ export const App: React.FC = () => {
   const [sequence, setSequence] = useState<string>('ABCD');
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
   const [customOverrides, setCustomOverrides] = useState<Record<string, string>>({});
+  const [dictionary, setDictionary] = useState<MnemonicDictionary>(() => loadDictionary());
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isWordlistOpen, setIsWordlistOpen] = useState(false);
+  const [isBlindRecallOpen, setIsBlindRecallOpen] = useState(false);
 
   // Scramble and Cube State Management
   const [scramble, setScramble] = useState<string>('');
   const [stickerColors, setStickerColors] = useState<Record<string, string>>(() => getSolvedState());
 
-  // Parse sequence into letter-pair chunks
+  // Parse sequence into letter-pair chunks using active dictionary & overrides
   const chunks = useMemo(() => {
-    return parseAndChunkSequence(sequence, customOverrides);
-  }, [sequence, customOverrides]);
+    return parseAndChunkSequence(sequence, customOverrides, dictionary);
+  }, [sequence, customOverrides, dictionary]);
 
   // Handle sequence change from text input
   const handleSequenceChange = (val: string) => {
@@ -90,12 +96,18 @@ export const App: React.FC = () => {
     }));
   };
 
+  const handleUpdateDictionary = (newDict: MnemonicDictionary) => {
+    setDictionary(newDict);
+    saveDictionary(newDict);
+  };
+
   return (
     <div className="min-h-screen bg-[#F9FAFB] text-slate-800 flex flex-col antialiased">
       <Header
         mode={mode}
         onModeChange={setMode}
         onOpenHelp={() => setIsHelpOpen(true)}
+        onOpenWordlist={() => setIsWordlistOpen(true)}
       />
 
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 py-8 space-y-8">
@@ -137,18 +149,34 @@ export const App: React.FC = () => {
             chunks={chunks}
             onUpdateOverride={handleUpdateOverride}
             onSelectAlternative={handleSelectAlternative}
+            onOpenBlindRecall={() => setIsBlindRecallOpen(true)}
           />
         </section>
       </main>
 
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-400">
-        3BLD Speffz Cube & SpeedSolving Mnemonic Generator • Phase 1
+        3BLD Speffz Cube & SpeedSolving Mnemonic Generator • Phase 2
       </footer>
 
       {/* Reference Modal */}
       <ReferenceModal
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
+      />
+
+      {/* Wordlist Manager Modal */}
+      <WordlistManagerModal
+        isOpen={isWordlistOpen}
+        onClose={() => setIsWordlistOpen(false)}
+        dict={dictionary}
+        onUpdateDictionary={handleUpdateDictionary}
+      />
+
+      {/* Blind Recall Memory Test */}
+      <BlindRecallTest
+        isOpen={isBlindRecallOpen}
+        onClose={() => setIsBlindRecallOpen(false)}
+        chunks={chunks}
       />
     </div>
   );
