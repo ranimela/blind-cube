@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three-stdlib';
 import { SpeffzMode, SpeffzSticker } from '../types/speffz';
 import { SPEFFZ_STICKERS, FACE_COLORS } from '../constants/speffzData';
 import { RotateCcw, Sparkles } from 'lucide-react';
@@ -104,12 +105,11 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
   const cubeGroupRef = useRef<THREE.Group | null>(null);
   const meshesRef = useRef<Map<string, THREE.Mesh>>(new Map());
 
-  // Interactive 3-axis rotation dragging state
-  const isDraggingRef = useRef(false);
-  const prevMousePos = useRef({ x: 0, y: 0 });
+  const pointerDownPos = useRef({ x: 0, y: 0 });
   const [hoveredSticker, setHoveredSticker] = useState<SpeffzSticker | null>(null);
 
   // Helper to determine sticker visibility according to mode
@@ -121,7 +121,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     return false;
   }, [mode]);
 
-  // Initial Scene Setup
+  // Initial Scene Setup with OrbitControls
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
@@ -132,9 +132,9 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
-    camera.position.set(4.5, 4.2, 5.5);
+    // Camera (placed at default UFR isometric angle)
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+    camera.position.set(4.8, 4.4, 5.8);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
@@ -145,6 +145,17 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     renderer.shadowMap.enabled = true;
     rendererRef.current = renderer;
     container.replaceChildren(renderer.domElement);
+
+    // OrbitControls: Full 3-axis smooth rotation with damping
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 0.9;
+    controls.enableZoom = true;
+    controls.minDistance = 4;
+    controls.maxDistance = 14;
+    controls.enablePan = false; // Keep cube centered
+    controlsRef.current = controls;
 
     // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
@@ -158,10 +169,8 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     dirLight2.position.set(-6, -4, -6);
     scene.add(dirLight2);
 
-    // Cube Master Group
+    // Cube Master Group (fixed at center)
     const cubeGroup = new THREE.Group();
-    // Default initial slight tilt for optimal 3-face visibility (U, F, R)
-    cubeGroup.rotation.set(0.35, -0.6, 0);
     cubeGroupRef.current = cubeGroup;
     scene.add(cubeGroup);
 
@@ -178,7 +187,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     SPEFFZ_STICKERS.forEach((st) => {
       const isVisible = isStickerVisible(st);
       const isHighlighted = activeSequence.endsWith(st.letter);
-      const texture = createStickerTexture(st.letter, st.faceColor, st.pieceType, !isVisible, isHighlighted);
+      const texture = createStickerTexture(st.letter, st.faceColor, st.pieceType, isVisible, isHighlighted);
       const material = new THREE.MeshStandardMaterial({
         map: texture,
         roughness: 0.35,
@@ -211,6 +220,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     let animationFrameId: number;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      controls.update();
       renderer.render(scene, camera);
     };
     animate();
@@ -229,6 +239,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
+      controls.dispose();
       renderer.dispose();
     };
   }, []);
@@ -241,7 +252,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
 
       const isVisible = isStickerVisible(st);
       const isHighlighted = activeSequence.length > 0 && activeSequence[activeSequence.length - 1] === st.letter;
-      const newTexture = createStickerTexture(st.letter, st.faceColor, st.pieceType, !isVisible, isHighlighted);
+      const newTexture = createStickerTexture(st.letter, st.faceColor, st.pieceType, isVisible, isHighlighted);
 
       const mat = mesh.material as THREE.MeshStandardMaterial;
       if (mat.map) {
@@ -252,37 +263,13 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     });
   }, [mode, activeSequence, isStickerVisible]);
 
-  // Pointer and Raycaster interactions with smooth 3-axis rotation
+  // Pointer event for Raycasting and clicking stickers without triggering on drag
   const handlePointerDown = (e: React.PointerEvent) => {
-    isDraggingRef.current = false;
-    prevMousePos.current = { x: e.clientX, y: e.clientY };
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    pointerDownPos.current = { x: e.clientX, y: e.clientY };
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (e.buttons === 1 && cubeGroupRef.current && cameraRef.current) {
-      const dx = e.clientX - prevMousePos.current.x;
-      const dy = e.clientY - prevMousePos.current.y;
-
-      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-        isDraggingRef.current = true;
-      }
-
-      // Smooth 3-axis rotation relative to screen orientation
-      const rotSpeed = 0.008;
-      
-      // Rotate around Camera's UP axis (Y) and RIGHT axis (X)
-      const deltaRotationQuaternion = new THREE.Quaternion()
-        .setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * rotSpeed)
-        .multiply(
-          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * rotSpeed)
-        );
-
-      cubeGroupRef.current.quaternion.premultiply(deltaRotationQuaternion);
-
-      prevMousePos.current = { x: e.clientX, y: e.clientY };
-    } else if (containerRef.current && cameraRef.current && sceneRef.current) {
-      // Raycast hover detection
+    if (containerRef.current && cameraRef.current && sceneRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const mouse = new THREE.Vector2(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -303,8 +290,11 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    if (!isDraggingRef.current && containerRef.current && cameraRef.current) {
-      // Clicked on a sticker
+    const dx = Math.abs(e.clientX - pointerDownPos.current.x);
+    const dy = Math.abs(e.clientY - pointerDownPos.current.y);
+
+    // If movement was negligible (< 4px), consider it a deliberate sticker click
+    if (dx < 4 && dy < 4 && containerRef.current && cameraRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const mouse = new THREE.Vector2(
         ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -322,32 +312,36 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
         }
       }
     }
-    isDraggingRef.current = false;
   };
 
-  // Preset quick views (sets clean Euler angles -> quaternion)
+  // Preset quick views using Camera Orbit positions (Standard BLD isometric angles)
   const resetOrientation = () => {
-    if (cubeGroupRef.current) {
-      cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(0.35, -0.6, 0, 'YXZ'));
+    if (cameraRef.current && controlsRef.current) {
+      cameraRef.current.position.set(4.8, 4.4, 5.8);
+      controlsRef.current.target.set(0, 0, 0);
+      controlsRef.current.update();
     }
   };
 
   const setView = (view: 'UFR' | 'UBL' | 'DFR' | 'DBL') => {
-    if (!cubeGroupRef.current) return;
+    if (!cameraRef.current || !controlsRef.current) return;
+    const distance = 8.5;
     switch (view) {
       case 'UFR':
-        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(0.35, -0.6, 0, 'YXZ'));
+        cameraRef.current.position.set(distance * 0.55, distance * 0.55, distance * 0.63);
         break;
       case 'UBL':
-        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(0.35, 2.5, 0, 'YXZ'));
+        cameraRef.current.position.set(-distance * 0.55, distance * 0.55, -distance * 0.63);
         break;
       case 'DFR':
-        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(-0.55, -0.6, 0, 'YXZ'));
+        cameraRef.current.position.set(distance * 0.55, -distance * 0.55, distance * 0.63);
         break;
       case 'DBL':
-        cubeGroupRef.current.quaternion.setFromEuler(new THREE.Euler(-0.55, 2.5, 0, 'YXZ'));
+        cameraRef.current.position.set(-distance * 0.55, -distance * 0.55, -distance * 0.63);
         break;
     }
+    controlsRef.current.target.set(0, 0, 0);
+    controlsRef.current.update();
   };
 
   return (
