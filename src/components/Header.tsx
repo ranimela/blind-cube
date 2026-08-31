@@ -24,11 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-semibold text-white text-xl tracking-tight">
-                3BLD Speffz Cube
+                Blind Cube Tool
               </h1>
-              <span className="text-[11px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                Phase 1
-              </span>
             </div>
             <p className="text-xs text-blue-100/80">
               Interactive 3D Letter Overlay & SpeedSolving Mnemonic Memo
