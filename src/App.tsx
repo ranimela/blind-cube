@@ -68,14 +68,14 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#F9FAFB] text-slate-800 flex flex-col antialiased">
       <Header
         mode={mode}
         onModeChange={setMode}
         onOpenHelp={() => setIsHelpOpen(true)}
       />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
+      <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 py-8 space-y-8">
         {/* Top Section: 3D Cube Canvas */}
         <section>
           <CubeViewport
@@ -107,8 +107,8 @@ export const App: React.FC = () => {
         </section>
       </main>
 
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500">
-        3BLD Speffz Cube & Letter-Pair Mnemonic Generator • Phase 1
+      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-400">
+        3BLD Speffz Cube & SpeedSolving Mnemonic Generator • Phase 1
       </footer>
 
       {/* Reference Modal */}

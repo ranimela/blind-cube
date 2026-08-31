@@ -14,37 +14,37 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenHelp,
 }) => {
   return (
-    <header className="w-full border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md sticky top-0 z-30">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="w-full bg-[#1E3A8A] text-white shadow-md sticky top-0 z-30">
+      <div className="max-w-[1200px] mx-auto px-4 py-3.5 flex items-center justify-between">
         {/* Branding */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-black text-lg">
-            <Box className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm text-white font-black shadow-sm">
+            <Box className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-slate-100 text-lg tracking-tight">
+              <h1 className="font-semibold text-white text-xl tracking-tight">
                 3BLD Speffz Cube
               </h1>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800/60">
+              <span className="text-[11px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                 Phase 1
               </span>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-blue-100/80">
               Interactive 3D Letter Overlay & SpeedSolving Mnemonic Memo
             </p>
           </div>
         </div>
 
-        {/* Mode Selector */}
+        {/* Mode Selector & Help */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-xl">
+          <div className="flex items-center bg-white/10 p-1 rounded-xl backdrop-blur-sm">
             <button
               onClick={() => onModeChange('full')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`min-h-[38px] px-3.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 mode === 'full'
-                  ? 'bg-sky-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-[#1E3A8A] shadow-sm font-bold'
+                  : 'text-blue-100 hover:text-white hover:bg-white/10'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -52,20 +52,20 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => onModeChange('corners')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`min-h-[38px] px-3.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 mode === 'corners'
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-[#1E3A8A] shadow-sm font-bold'
+                  : 'text-blue-100 hover:text-white hover:bg-white/10'
               }`}
             >
               <span>Corners</span>
             </button>
             <button
               onClick={() => onModeChange('edges')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`min-h-[38px] px-3.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 mode === 'edges'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-[#1E3A8A] shadow-sm font-bold'
+                  : 'text-blue-100 hover:text-white hover:bg-white/10'
               }`}
             >
               <span>Edges</span>
@@ -74,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onOpenHelp}
-            className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-transparent hover:border-slate-800 rounded-xl transition-all"
+            className="w-10 h-10 flex items-center justify-center text-blue-100 hover:text-white hover:bg-white/10 rounded-xl transition-all"
             title="Speffz Reference Sheet"
           >
             <HelpCircle className="w-5 h-5" />

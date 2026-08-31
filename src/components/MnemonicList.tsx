@@ -44,11 +44,11 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
 
   if (chunks.length === 0) {
     return (
-      <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-3">
-        <div className="p-3 bg-slate-800/60 rounded-2xl text-slate-500">
+      <div className="w-full bg-white rounded-3xl p-10 text-center flex flex-col items-center justify-center gap-3 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)]">
+        <div className="p-4 bg-blue-50 text-[#1E3A8A] rounded-2xl">
           <BookOpen className="w-8 h-8" />
         </div>
-        <h3 className="font-semibold text-slate-300">No Mnemonic Sequence Yet</h3>
+        <h3 className="font-semibold text-lg text-slate-800">No Mnemonic Sequence Yet</h3>
         <p className="text-sm text-slate-500 max-w-md">
           Type Speffz characters into the input or click any colored sticker on the 3D cube above to generate letter pairs and SpeedSolving mnemonics.
         </p>
@@ -61,50 +61,50 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
       {/* Header bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-sky-400" />
-          <h3 className="font-semibold text-slate-200 text-sm">
+          <Sparkles className="w-4 h-4 text-[#1E3A8A]" />
+          <h3 className="font-semibold text-slate-700 text-sm">
             Mnemonic Letter Pairs ({chunks.length})
           </h3>
         </div>
 
         <button
           onClick={handleCopyStory}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 px-3 py-1.5 rounded-lg transition-all"
+          className="min-h-[36px] flex items-center gap-1.5 text-xs font-semibold text-[#1E3A8A] hover:bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl transition-all"
         >
-          {copiedMemo ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+          {copiedMemo ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
           <span>Copy Story</span>
         </button>
       </div>
 
       {/* Grid of letter pair cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {chunks.map((chunk, idx) => {
           const isEditing = editingPair === chunk.pair;
 
           return (
             <div
               key={chunk.id}
-              className={`relative bg-slate-900/90 border rounded-xl p-4 transition-all duration-200 flex flex-col justify-between shadow-lg hover:border-slate-700 ${
+              className={`relative bg-white rounded-3xl p-5 transition-all duration-200 flex flex-col justify-between shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] hover:shadow-lg border ${
                 chunk.isSingle
-                  ? 'border-amber-500/40 bg-gradient-to-br from-slate-900 to-amber-950/20'
-                  : 'border-slate-800'
+                  ? 'border-orange-200 bg-orange-50/20'
+                  : 'border-transparent'
               }`}
             >
               <div>
                 {/* Card Top Row: Pair & Index */}
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xl font-black text-sky-400 bg-sky-950/80 border border-sky-800/60 px-2.5 py-0.5 rounded-lg">
+                    <span className="font-mono text-xl font-bold text-[#1E3A8A] bg-blue-50 px-3 py-1 rounded-xl">
                       {chunk.pair}
                     </span>
                     {chunk.isSingle && (
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-400 bg-amber-950/70 border border-amber-800/60 px-2 py-0.5 rounded-md">
+                      <span className="flex items-center gap-1 text-[11px] font-semibold text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full">
                         <AlertCircle className="w-3 h-3" />
                         Single / Parity
                       </span>
                     )}
                   </div>
-                  <span className="text-xs font-mono text-slate-500 font-semibold">
+                  <span className="text-xs font-mono text-slate-400 font-semibold">
                     #{idx + 1}
                   </span>
                 </div>
@@ -122,30 +122,30 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                           if (e.key === 'Escape') cancelEdit();
                         }}
                         autoFocus
-                        className="w-full bg-slate-950 border border-sky-500 text-sky-300 font-semibold px-2.5 py-1 text-sm rounded-lg outline-none"
+                        className="w-full bg-[#F9FAFB] border border-[#1E3A8A] text-[#1E3A8A] font-semibold px-3 py-1.5 text-sm rounded-xl outline-none"
                       />
                       <button
                         onClick={() => saveEdit(chunk.pair)}
-                        className="p-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg transition-colors"
+                        className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors"
                       >
-                        <Check className="w-3.5 h-3.5" />
+                        <Check className="w-4 h-4" />
                       </button>
                       <button
                         onClick={cancelEdit}
-                        className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
+                        className="p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between group/word">
-                      <p className="text-lg font-bold text-slate-100 tracking-tight">
+                      <p className="text-xl font-bold text-slate-900 tracking-tight">
                         {chunk.mnemonic}
                       </p>
                       <button
                         onClick={() => startEdit(chunk)}
                         title="Customize mnemonic word"
-                        className="opacity-0 group-hover/word:opacity-100 p-1 text-slate-400 hover:text-sky-400 transition-opacity"
+                        className="opacity-0 group-hover/word:opacity-100 p-1.5 text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -156,16 +156,16 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
 
               {/* Alternative Suggestions */}
               {chunk.alternatives.length > 0 && !isEditing && (
-                <div className="pt-2 mt-2 border-t border-slate-800/80">
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500 block mb-1.5">
-                    Alternatives:
+                <div className="pt-3 mt-3 border-t border-slate-100">
+                  <span className="text-[11px] font-medium text-slate-400 block mb-1.5">
+                    Alternative suggestions:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {chunk.alternatives.map((alt, aIdx) => (
                       <button
                         key={aIdx}
                         onClick={() => onSelectAlternative(chunk.pair, alt)}
-                        className="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded-md border border-slate-700/50 transition-colors"
+                        className="text-xs bg-[#F1F5F9] hover:bg-blue-50 text-slate-600 hover:text-[#1E3A8A] px-2.5 py-1 rounded-lg transition-colors font-medium"
                       >
                         {alt}
                       </button>
