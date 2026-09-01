@@ -63,7 +63,7 @@ export function generateProceduralMnemonic(pair: string): string[] {
 }
 
 /**
- * Looks up mnemonics for a 1 or 2 letter pair chunk.
+ * Looks up mnemonics for a 1 or 2 letter pair chunk from active dictionary.
  */
 export function lookupMnemonics(
   chunkStr: string,
@@ -72,14 +72,14 @@ export function lookupMnemonics(
   const clean = chunkStr.toUpperCase();
   
   if (clean.length === 1) {
-    const list = SINGLE_LETTER_DEFAULTS[clean] || [clean];
+    const list = dict[clean] || SINGLE_LETTER_DEFAULTS[clean] || [clean];
     return {
       primary: list[0],
       alternatives: list.slice(1),
     };
   }
 
-  const dictMatches = dict[clean] || MNEMONIC_DICT[clean];
+  const dictMatches = dict[clean];
   if (dictMatches && dictMatches.length > 0) {
     return {
       primary: dictMatches[0],

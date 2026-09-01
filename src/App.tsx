@@ -199,6 +199,7 @@ export const App: React.FC = () => {
         <section>
           <MnemonicList
             chunks={chunks}
+            dictionary={dictionary}
             onUpdateOverride={handleUpdateOverride}
             onSelectAlternative={handleSelectAlternative}
             onDeleteWordFromPair={handleDeleteWordFromPair}

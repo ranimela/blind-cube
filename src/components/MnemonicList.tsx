@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { LetterPairChunk } from '../types/speffz';
-import { Edit2, Check, X, Sparkles, BookOpen, AlertCircle, Copy, Target, Plus, Trash2 } from 'lucide-react';
+import { LetterPairChunk, MnemonicDictionary } from '../types/speffz';
+import { Edit2, Check, X, Sparkles, BookOpen, AlertCircle, Copy, Target, Plus } from 'lucide-react';
 
 interface MnemonicListProps {
   chunks: LetterPairChunk[];
+  dictionary: MnemonicDictionary;
   onUpdateOverride: (pair: string, customWord: string) => void;
   onSelectAlternative: (pair: string, altWord: string) => void;
-  onDeleteWordFromPair?: (pair: string, wordToDelete: string) => void;
-  onAddWordToPair?: (pair: string, newWord: string) => void;
+  onDeleteWordFromPair: (pair: string, wordToDelete: string) => void;
+  onAddWordToPair: (pair: string, newWord: string) => void;
   onOpenBlindRecall: () => void;
 }
 
 export const MnemonicList: React.FC<MnemonicListProps> = ({
   chunks,
+  dictionary,
   onUpdateOverride,
   onSelectAlternative,
   onDeleteWordFromPair,
@@ -43,7 +45,7 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
   };
 
   const handleAddWord = (pair: string) => {
-    if (newWordInput.trim() && onAddWordToPair) {
+    if (newWordInput.trim()) {
       onAddWordToPair(pair, newWordInput.trim());
       setNewWordInput('');
     }
@@ -109,8 +111,9 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
           const isEditing = editingPair === chunk.pair;
           const isAdding = addingPair === chunk.pair;
 
-          // Combine active mnemonic + all alternatives into a complete list of words for this pair
-          const allWords = Array.from(new Set([chunk.mnemonic, ...chunk.alternatives])).filter(Boolean);
+          // Read the active list of words strictly from the live dictionary for this pair
+          const dictWords = dictionary[chunk.pair] || (chunk.pair.length === 1 ? [chunk.mnemonic] : [chunk.mnemonic, ...chunk.alternatives]);
+          const allWords = Array.from(new Set([chunk.mnemonic, ...dictWords])).filter(Boolean);
 
           return (
             <div
