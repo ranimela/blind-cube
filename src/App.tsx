@@ -8,19 +8,9 @@ import { MnemonicList } from './components/MnemonicList';
 import { ReferenceModal } from './components/ReferenceModal';
 import { BlindRecallTest } from './components/BlindRecallTest';
 import { WordlistManagerModal } from './components/dictionary/WordlistManagerModal';
-import { sanitizeSpeffzSequence, parseAndChunkSequence, SINGLE_LETTER_DEFAULTS } from './services/mnemonicService';
+import { sanitizeSpeffzSequence, parseAndChunkSequence, SINGLE_LETTER_DEFAULTS, generateDynamicDrill } from './services/mnemonicService';
 import { loadDictionary, saveDictionary, updatePairInDictionary, getDefaultDictionary } from './services/dictionaryStorage';
 import { getSolvedState, generateRandomScramble } from './utils/cubeScrambler';
-
-// Sample drills for quick practice
-const SAMPLE_DRILLS = [
-  'AB CD EF GH',
-  'UB LD FR BK',
-  'JA CK PL OT',
-  'MK LN QS UV',
-  'CR AB DO GT',
-  'AC BD EG FH IK JL MO NP QS RT UV WX',
-];
 
 export const App: React.FC = () => {
   const [mode, setMode] = useState<SpeffzMode>('full');
@@ -66,8 +56,10 @@ export const App: React.FC = () => {
   };
 
   const handleSample = () => {
-    const randomIndex = Math.floor(Math.random() * SAMPLE_DRILLS.length);
-    setSequence(sanitizeSpeffzSequence(SAMPLE_DRILLS[randomIndex]));
+    // Generate a fresh, truly randomized dynamic drill (4-6 pairs = 8-12 letters) matching active mode
+    const pairCount = Math.floor(Math.random() * 3) + 4; // 4, 5, or 6 pairs
+    const randomDrill = generateDynamicDrill(mode, pairCount);
+    setSequence(randomDrill);
     setSelectedStickerId(null);
   };
 

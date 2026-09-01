@@ -31,6 +31,39 @@ export const SINGLE_LETTER_DEFAULTS: Record<string, string[]> = {
   X: ['X-ray', 'Xylophone', 'Xenon', 'X-Men'],
 };
 
+export const SPEFFZ_CORNER_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWX'.split('');
+export const SPEFFZ_EDGE_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWX'.split('');
+
+/**
+ * Generates a truly random, non-repeating, dynamic Speffz drill sequence.
+ * Avoids identical consecutive letters (illegal same-piece cycle target) and adapts to mode.
+ */
+export function generateDynamicDrill(
+  mode: 'full' | 'corners' | 'edges' = 'full',
+  pairCount: number = 4
+): string {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWX'.split('');
+  const result: string[] = [];
+
+  for (let i = 0; i < pairCount; i++) {
+    // Pick first letter
+    let first = letters[Math.floor(Math.random() * letters.length)];
+    // Ensure first is not equal to previous trailing letter
+    if (result.length > 0 && first === result[result.length - 1]) {
+      const remaining = letters.filter((l) => l !== first);
+      first = remaining[Math.floor(Math.random() * remaining.length)];
+    }
+    
+    // Pick second letter (different from first)
+    const available = letters.filter((l) => l !== first);
+    const second = available[Math.floor(Math.random() * available.length)];
+
+    result.push(first, second);
+  }
+
+  return result.join('');
+}
+
 /**
  * Sanitizes input text keeping only valid Speffz letters (A-X).
  */
