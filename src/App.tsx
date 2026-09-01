@@ -84,14 +84,18 @@ export const App: React.FC = () => {
 
   const handleUpdateOverride = (pair: string, customWord: string) => {
     const cleanPair = pair.toUpperCase().trim();
+    const cleanWord = customWord.trim();
+    if (!cleanWord) return;
+
     setCustomOverrides((prev) => ({
       ...prev,
-      [cleanPair]: customWord,
+      [cleanPair]: cleanWord,
     }));
-    // Also ensure the custom word is added to dictionary list if not already present
+
+    // Ensure the custom word is added to the dictionary list if not already present
     const currentWords = dictionary[cleanPair] || [];
-    if (!currentWords.some((w) => w.toLowerCase() === customWord.toLowerCase())) {
-      const updatedList = [customWord, ...currentWords];
+    if (!currentWords.some((w) => w.toLowerCase() === cleanWord.toLowerCase())) {
+      const updatedList = [cleanWord, ...currentWords];
       const updatedDict = updatePairInDictionary(dictionary, cleanPair, updatedList);
       setDictionary(updatedDict);
       saveDictionary(updatedDict);
@@ -100,31 +104,29 @@ export const App: React.FC = () => {
 
   const handleSelectAlternative = (pair: string, altWord: string) => {
     const cleanPair = pair.toUpperCase().trim();
+    const cleanWord = altWord.trim();
+    // Simply set the active word for this pair without altering or deleting the list
     setCustomOverrides((prev) => ({
       ...prev,
-      [cleanPair]: altWord,
+      [cleanPair]: cleanWord,
     }));
-    // Move selected word to the front of dictionary list for this pair
-    const currentWords = dictionary[cleanPair] || [];
-    const filtered = currentWords.filter((w) => w.toLowerCase() !== altWord.toLowerCase());
-    const updatedList = [altWord, ...filtered];
-    const updatedDict = updatePairInDictionary(dictionary, cleanPair, updatedList);
-    setDictionary(updatedDict);
-    saveDictionary(updatedDict);
   };
 
   const handleDeleteWordFromPair = (pair: string, wordToDelete: string) => {
     const cleanPair = pair.toUpperCase().trim();
     const currentWords = dictionary[cleanPair] || [];
-    const remaining = currentWords.filter((w) => w.toLowerCase() !== wordToDelete.toLowerCase());
+    const remaining = currentWords.filter((w) => w.toLowerCase() !== wordToDelete.trim().toLowerCase());
+    
+    // If all words deleted, fallback to pair identifier
     const finalWords = remaining.length > 0 ? remaining : [cleanPair];
     const updatedDict = updatePairInDictionary(dictionary, cleanPair, finalWords);
     
     setDictionary(updatedDict);
     saveDictionary(updatedDict);
 
-    // If deleting the active word, fallback to the next available word
-    if (customOverrides[cleanPair]?.toLowerCase() === wordToDelete.toLowerCase()) {
+    // If the currently active word was deleted, switch active word to the first remaining word
+    const currentActive = customOverrides[cleanPair] || currentWords[0];
+    if (currentActive && currentActive.toLowerCase() === wordToDelete.trim().toLowerCase()) {
       setCustomOverrides((prev) => ({
         ...prev,
         [cleanPair]: finalWords[0],
@@ -134,9 +136,12 @@ export const App: React.FC = () => {
 
   const handleAddWordToPair = (pair: string, newWord: string) => {
     const cleanPair = pair.toUpperCase().trim();
+    const cleanWord = newWord.trim();
+    if (!cleanWord) return;
+
     const currentWords = dictionary[cleanPair] || [];
-    if (!currentWords.some((w) => w.toLowerCase() === newWord.trim().toLowerCase())) {
-      const updatedList = [...currentWords, newWord.trim()];
+    if (!currentWords.some((w) => w.toLowerCase() === cleanWord.toLowerCase())) {
+      const updatedList = [...currentWords, cleanWord];
       const updatedDict = updatePairInDictionary(dictionary, cleanPair, updatedList);
       setDictionary(updatedDict);
       saveDictionary(updatedDict);

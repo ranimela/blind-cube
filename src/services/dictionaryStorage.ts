@@ -4,11 +4,17 @@ import { MnemonicDictionary } from '../types/speffz';
 export const DICTIONARY_STORAGE_KEY = 'blind_cube_custom_wordlist_v1';
 export const SPEFFZ_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWX'.split('');
 
+// Immutable factory default base dictionary (always preserved as backup)
+const FACTORY_DEFAULT_BACKUP: Readonly<MnemonicDictionary> = Object.freeze(
+  JSON.parse(JSON.stringify(wordlistRaw)) as MnemonicDictionary
+);
+
 /**
- * Returns the default base 576-pair wordlist dictionary.
+ * Returns a fresh copy of the factory default base 576-pair wordlist dictionary.
+ * The original SpeedSolving list is permanently preserved in memory.
  */
 export function getDefaultDictionary(): MnemonicDictionary {
-  return JSON.parse(JSON.stringify(wordlistRaw)) as MnemonicDictionary;
+  return JSON.parse(JSON.stringify(FACTORY_DEFAULT_BACKUP)) as MnemonicDictionary;
 }
 
 /**
@@ -42,7 +48,7 @@ export function saveDictionary(dict: MnemonicDictionary): void {
 }
 
 /**
- * Clears custom dictionary and restores default.
+ * Clears custom dictionary and restores default from backup.
  */
 export function resetDictionary(): MnemonicDictionary {
   try {

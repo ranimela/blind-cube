@@ -248,8 +248,8 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
 
                     return (
                       <div
-                        key={wIdx}
-                        className={`group/badge inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                        key={`${chunk.pair}-${word}-${wIdx}`}
+                        className={`inline-flex items-center rounded-lg text-xs font-medium border transition-all ${
                           isActive
                             ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-sm'
                             : 'bg-[#F1F5F9] text-slate-700 border-slate-200 hover:bg-blue-50 hover:text-[#1E3A8A]'
@@ -257,9 +257,10 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                       >
                         {/* Clicking the word selects it as the active mnemonic */}
                         <button
+                          type="button"
                           onClick={() => onSelectAlternative(chunk.pair, word)}
                           title={`Select "${word}" as active word`}
-                          className="text-left font-medium outline-none"
+                          className="pl-2.5 pr-1.5 py-1 text-left font-medium outline-none cursor-pointer"
                         >
                           {word}
                         </button>
@@ -267,18 +268,20 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                         {/* 'x' button to remove word from dictionary */}
                         {onDeleteWordFromPair && (
                           <button
+                            type="button"
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
                               onDeleteWordFromPair(chunk.pair, word);
                             }}
                             title={`Remove "${word}" from word list`}
-                            className={`p-0.5 rounded transition-colors ${
+                            className={`pr-2 pl-1 py-1 flex items-center justify-center cursor-pointer transition-colors ${
                               isActive
-                                ? 'hover:bg-red-500 hover:text-white text-blue-200'
-                                : 'hover:bg-red-100 hover:text-red-600 text-slate-400'
+                                ? 'hover:text-red-300 text-blue-200'
+                                : 'hover:text-red-600 text-slate-400'
                             }`}
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
