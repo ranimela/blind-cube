@@ -112,8 +112,17 @@ export function parseAndChunkSequence(
     const secondLetter = isSingle ? undefined : pair[1];
     const id = `${pair}-${i}`;
 
-    const { primary, alternatives } = lookupMnemonics(pair, dict);
+    const { primary, alternatives: dictAlternatives } = lookupMnemonics(pair, dict);
     const custom = customOverrides[pair];
+    const activeMnemonic = custom || primary;
+
+    // All available words for this pair in the active dictionary
+    const allDictWords = dict[pair] || (pair.length === 1 ? (SINGLE_LETTER_DEFAULTS[pair] || [primary]) : [primary, ...dictAlternatives]);
+    
+    // Build full alternatives list (every word in the dictionary except the active one)
+    const alternatives = allDictWords.filter(
+      (w) => w.toLowerCase() !== activeMnemonic.toLowerCase()
+    );
 
     chunks.push({
       id,
@@ -121,7 +130,7 @@ export function parseAndChunkSequence(
       firstLetter,
       secondLetter,
       isSingle,
-      mnemonic: custom || primary,
+      mnemonic: activeMnemonic,
       alternatives,
       isCustom: Boolean(custom),
     });

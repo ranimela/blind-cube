@@ -199,6 +199,7 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                   </span>
                   {!isAdding && (
                     <button
+                      type="button"
                       onClick={() => setAddingPair(chunk.pair)}
                       className="flex items-center gap-1 text-[11px] font-semibold text-[#1E3A8A] hover:text-blue-700 px-1.5 py-0.5 rounded hover:bg-blue-50 transition-colors"
                       title="Add a new word to this pair"
@@ -225,6 +226,7 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                       className="w-full bg-[#F9FAFB] border border-blue-300 text-xs px-2.5 py-1 rounded-lg outline-none text-[#1E3A8A]"
                     />
                     <button
+                      type="button"
                       onClick={() => handleAddWord(chunk.pair)}
                       className="p-1 bg-[#1E3A8A] text-white rounded-lg hover:bg-blue-700 transition-colors"
                       title="Add"
@@ -232,6 +234,7 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                       <Check className="w-3.5 h-3.5" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => setAddingPair(null)}
                       className="p-1 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors"
                       title="Cancel"
@@ -259,8 +262,8 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                         <button
                           type="button"
                           onClick={() => onSelectAlternative(chunk.pair, word)}
-                          title={`Select "${word}" as active word`}
-                          className="pl-2.5 pr-1.5 py-1 text-left font-medium outline-none cursor-pointer"
+                          title={isActive ? `"${word}" is active` : `Click to make "${word}" active`}
+                          className="pl-2.5 pr-1 py-1 text-left font-medium outline-none cursor-pointer flex-1"
                         >
                           {word}
                         </button>
@@ -274,11 +277,11 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                               e.stopPropagation();
                               onDeleteWordFromPair(chunk.pair, word);
                             }}
-                            title={`Remove "${word}" from word list`}
-                            className={`pr-2 pl-1 py-1 flex items-center justify-center cursor-pointer transition-colors ${
+                            title={`Remove "${word}" from list`}
+                            className={`p-1 mr-1 rounded hover:bg-black/10 flex items-center justify-center cursor-pointer transition-colors ${
                               isActive
-                                ? 'hover:text-red-300 text-blue-200'
-                                : 'hover:text-red-600 text-slate-400'
+                                ? 'text-blue-100 hover:text-red-300'
+                                : 'text-slate-400 hover:text-red-600'
                             }`}
                           >
                             <X className="w-3.5 h-3.5" />
