@@ -13,7 +13,7 @@ import { loadDictionary, saveDictionary, updatePairInDictionary, getDefaultDicti
 import { getSolvedState, generateRandomScramble } from './utils/cubeScrambler';
 
 export const App: React.FC = () => {
-  const [mode, setMode] = useState<SpeffzMode>('full');
+  const [mode, setMode] = useState<SpeffzMode>('edges');
   const [sequence, setSequence] = useState<string>('ABCD');
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
   const [customOverrides, setCustomOverrides] = useState<Record<string, string>>({});
