@@ -31,6 +31,44 @@ export const App: React.FC = () => {
     return parseAndChunkSequence(sequence, customOverrides, dictionary);
   }, [sequence, customOverrides, dictionary]);
 
+  // Global keyboard typing: Allows typing Speffz letters (A-X) anywhere on the page
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // If user is typing inside an explicit input/textarea or modal is open, let normal typing occur
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        isHelpOpen ||
+        isWordlistOpen ||
+        isBlindRecallOpen ||
+        e.ctrlKey ||
+        e.metaKey ||
+        e.altKey
+      ) {
+        return;
+      }
+
+      const key = e.key.toUpperCase();
+      if (/^[A-X]$/.test(key)) {
+        e.preventDefault();
+        setSequence((prev) => prev + key);
+        setSelectedStickerId(null);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        setSequence((prev) => prev.slice(0, -1));
+        setSelectedStickerId(null);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setSequence('');
+        setSelectedStickerId(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isHelpOpen, isWordlistOpen, isBlindRecallOpen]);
+
   // Handle sequence change from text input
   const handleSequenceChange = (val: string) => {
     setSequence(sanitizeSpeffzSequence(val));
