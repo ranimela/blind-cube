@@ -8,8 +8,8 @@ import { MnemonicList } from './components/MnemonicList';
 import { ReferenceModal } from './components/ReferenceModal';
 import { BlindRecallTest } from './components/BlindRecallTest';
 import { WordlistManagerModal } from './components/dictionary/WordlistManagerModal';
-import { sanitizeSpeffzSequence, parseAndChunkSequence } from './services/mnemonicService';
-import { loadDictionary, saveDictionary } from './services/dictionaryStorage';
+import { sanitizeSpeffzSequence, parseAndChunkSequence, SINGLE_LETTER_DEFAULTS } from './services/mnemonicService';
+import { loadDictionary, saveDictionary, updatePairInDictionary, getDefaultDictionary } from './services/dictionaryStorage';
 import { getSolvedState, generateRandomScramble } from './utils/cubeScrambler';
 
 // Sample drills for quick practice
@@ -93,7 +93,7 @@ export const App: React.FC = () => {
     }));
 
     // Ensure the custom word is added to the dictionary list if not already present
-    const currentWords = dictionary[cleanPair] || [];
+    const currentWords = dictionary[cleanPair] || (cleanPair.length === 1 ? (SINGLE_LETTER_DEFAULTS[cleanPair] || [cleanPair]) : (getDefaultDictionary()[cleanPair] || [cleanPair]));
     if (!currentWords.some((w) => w.toLowerCase() === cleanWord.toLowerCase())) {
       const updatedList = [cleanWord, ...currentWords];
       const updatedDict = updatePairInDictionary(dictionary, cleanPair, updatedList);
@@ -114,7 +114,7 @@ export const App: React.FC = () => {
 
   const handleDeleteWordFromPair = (pair: string, wordToDelete: string) => {
     const cleanPair = pair.toUpperCase().trim();
-    const currentWords = dictionary[cleanPair] || [];
+    const currentWords = dictionary[cleanPair] || (cleanPair.length === 1 ? (SINGLE_LETTER_DEFAULTS[cleanPair] || [cleanPair]) : (getDefaultDictionary()[cleanPair] || [cleanPair]));
     const remaining = currentWords.filter((w) => w.toLowerCase() !== wordToDelete.trim().toLowerCase());
     
     // If all words deleted, fallback to pair identifier
@@ -139,7 +139,7 @@ export const App: React.FC = () => {
     const cleanWord = newWord.trim();
     if (!cleanWord) return;
 
-    const currentWords = dictionary[cleanPair] || [];
+    const currentWords = dictionary[cleanPair] || (cleanPair.length === 1 ? (SINGLE_LETTER_DEFAULTS[cleanPair] || [cleanPair]) : (getDefaultDictionary()[cleanPair] || [cleanPair]));
     if (!currentWords.some((w) => w.toLowerCase() === cleanWord.toLowerCase())) {
       const updatedList = [...currentWords, cleanWord];
       const updatedDict = updatePairInDictionary(dictionary, cleanPair, updatedList);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LetterPairChunk, MnemonicDictionary } from '../types/speffz';
 import { Edit2, Check, X, Sparkles, BookOpen, AlertCircle, Copy, Target, Plus } from 'lucide-react';
+import { SINGLE_LETTER_DEFAULTS } from '../services/mnemonicService';
 
 interface MnemonicListProps {
   chunks: LetterPairChunk[];
@@ -112,8 +113,10 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
           const isAdding = addingPair === chunk.pair;
 
           // Read the active list of words strictly from the live dictionary for this pair
-          const dictWords = dictionary[chunk.pair] || (chunk.pair.length === 1 ? [chunk.mnemonic] : [chunk.mnemonic, ...chunk.alternatives]);
-          const allWords = Array.from(new Set([chunk.mnemonic, ...dictWords])).filter(Boolean);
+          const dictWords = dictionary[chunk.pair] || (chunk.pair.length === 1 ? (SINGLE_LETTER_DEFAULTS[chunk.pair] || [chunk.mnemonic]) : [chunk.mnemonic, ...chunk.alternatives]);
+          const allWords = dictWords.some((w) => w.toLowerCase() === chunk.mnemonic.toLowerCase())
+            ? dictWords
+            : [chunk.mnemonic, ...dictWords];
 
           return (
             <div

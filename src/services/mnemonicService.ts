@@ -4,7 +4,7 @@ import { LetterPairChunk, MnemonicDictionary } from '../types/speffz';
 const MNEMONIC_DICT: MnemonicDictionary = wordlistRaw as MnemonicDictionary;
 
 // Single letter phonetic / visual defaults for odd trailing letters
-const SINGLE_LETTER_DEFAULTS: Record<string, string[]> = {
+export const SINGLE_LETTER_DEFAULTS: Record<string, string[]> = {
   A: ['Apple', 'Ace', 'Arrow', 'Alien'],
   B: ['Bee', 'Bat', 'Ball', 'Boat'],
   C: ['Cat', 'Car', 'Crown', 'Cake'],
@@ -114,10 +114,11 @@ export function parseAndChunkSequence(
 
     const { primary, alternatives: dictAlternatives } = lookupMnemonics(pair, dict);
     const custom = customOverrides[pair];
-    const activeMnemonic = custom || primary;
 
     // All available words for this pair in the active dictionary
     const allDictWords = dict[pair] || (pair.length === 1 ? (SINGLE_LETTER_DEFAULTS[pair] || [primary]) : [primary, ...dictAlternatives]);
+
+    const activeMnemonic = custom || primary;
     
     // Build full alternatives list (every word in the dictionary except the active one)
     const alternatives = allDictWords.filter(
