@@ -12,6 +12,9 @@ import { sanitizeSpeffzSequence, parseAndChunkSequence, SINGLE_LETTER_DEFAULTS, 
 import { loadDictionary, saveDictionary, updatePairInDictionary, getDefaultDictionary } from './services/dictionaryStorage';
 import { getSolvedState, generateRandomScramble } from './utils/cubeScrambler';
 
+import cornersImg from './assets/corners.png';
+import edgesImg from './assets/edges.png';
+
 export const App: React.FC = () => {
   const [mode, setMode] = useState<SpeffzMode>('edges');
   const [sequence, setSequence] = useState<string>('ABCD');
@@ -203,7 +206,7 @@ export const App: React.FC = () => {
         </section>
 
         {/* 3D Cube Canvas */}
-        <section>
+        <section className="space-y-4">
           <CubeViewport
             mode={mode}
             activeSequence={sequence}
@@ -211,6 +214,64 @@ export const App: React.FC = () => {
             stickerColors={stickerColors}
             onStickerClick={handleStickerClick}
           />
+
+          {/* Reference Speffz Diagram below the 3D cube according to active mode */}
+          <div className="bg-white rounded-3xl p-5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col items-center justify-center transition-all">
+            <div className="flex items-center justify-between w-full mb-3 px-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1E3A8A] flex items-center gap-2">
+                <span>Speffz Reference Map:</span>
+                <span className="text-slate-500 font-semibold capitalize">
+                  {mode === 'full' ? 'Corners & Edges' : `${mode} Map`}
+                </span>
+              </span>
+              <span className="text-[11px] text-slate-400 font-medium">
+                Standard Net Projection
+              </span>
+            </div>
+
+            <div className="w-full flex items-center justify-center gap-6 overflow-hidden">
+              {mode === 'edges' && (
+                <div className="flex flex-col items-center">
+                  <img
+                    src={edgesImg}
+                    alt="Speffz Edges Reference Map"
+                    className="max-h-[260px] md:max-h-[320px] w-auto object-contain rounded-2xl transition-all"
+                  />
+                </div>
+              )}
+
+              {mode === 'corners' && (
+                <div className="flex flex-col items-center">
+                  <img
+                    src={cornersImg}
+                    alt="Speffz Corners Reference Map"
+                    className="max-h-[260px] md:max-h-[320px] w-auto object-contain rounded-2xl transition-all"
+                  />
+                </div>
+              )}
+
+              {mode === 'full' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full justify-items-center">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500">Edges</span>
+                    <img
+                      src={edgesImg}
+                      alt="Speffz Edges Reference Map"
+                      className="max-h-[220px] md:max-h-[260px] w-auto object-contain rounded-2xl"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500">Corners</span>
+                    <img
+                      src={cornersImg}
+                      alt="Speffz Corners Reference Map"
+                      className="max-h-[220px] md:max-h-[260px] w-auto object-contain rounded-2xl"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </section>
 
         {/* Middle Section: Sequence Input Bar */}
