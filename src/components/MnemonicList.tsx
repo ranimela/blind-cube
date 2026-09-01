@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { LetterPairChunk } from '../types/speffz';
-import { Edit2, Check, X, Sparkles, BookOpen, AlertCircle, Copy, Target } from 'lucide-react';
+import { Edit2, Check, X, Sparkles, BookOpen, AlertCircle, Copy, Target, Plus, Trash2 } from 'lucide-react';
 
 interface MnemonicListProps {
   chunks: LetterPairChunk[];
   onUpdateOverride: (pair: string, customWord: string) => void;
   onSelectAlternative: (pair: string, altWord: string) => void;
+  onDeleteWordFromPair?: (pair: string, wordToDelete: string) => void;
+  onAddWordToPair?: (pair: string, newWord: string) => void;
   onOpenBlindRecall: () => void;
 }
 
@@ -13,10 +15,14 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
   chunks,
   onUpdateOverride,
   onSelectAlternative,
+  onDeleteWordFromPair,
+  onAddWordToPair,
   onOpenBlindRecall,
 }) => {
   const [editingPair, setEditingPair] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [addingPair, setAddingPair] = useState<string | null>(null);
+  const [newWordInput, setNewWordInput] = useState<string>('');
   const [copiedMemo, setCopiedMemo] = useState(false);
 
   const startEdit = (chunk: LetterPairChunk) => {
@@ -34,6 +40,14 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
   const cancelEdit = () => {
     setEditingPair(null);
     setEditValue('');
+  };
+
+  const handleAddWord = (pair: string) => {
+    if (newWordInput.trim() && onAddWordToPair) {
+      onAddWordToPair(pair, newWordInput.trim());
+      setNewWordInput('');
+    }
+    setAddingPair(null);
   };
 
   const handleCopyStory = () => {
@@ -93,6 +107,10 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {chunks.map((chunk, idx) => {
           const isEditing = editingPair === chunk.pair;
+          const isAdding = addingPair === chunk.pair;
+
+          // Combine active mnemonic + all alternatives into a complete list of words for this pair
+          const allWords = Array.from(new Set([chunk.mnemonic, ...chunk.alternatives])).filter(Boolean);
 
           return (
             <div
@@ -122,7 +140,7 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                   </span>
                 </div>
 
-                {/* Main Mnemonic Word */}
+                {/* Active Mnemonic Word (Primary) */}
                 <div className="my-2">
                   {isEditing ? (
                     <div className="flex items-center gap-1.5">
@@ -135,6 +153,7 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                           if (e.key === 'Escape') cancelEdit();
                         }}
                         autoFocus
+                        placeholder="Enter primary word..."
                         className="w-full bg-[#F9FAFB] border border-[#1E3A8A] text-[#1E3A8A] font-semibold px-3 py-1.5 text-sm rounded-xl outline-none"
                       />
                       <button
@@ -152,12 +171,17 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                     </div>
                   ) : (
                     <div className="flex items-center justify-between group/word">
-                      <p className="text-xl font-bold text-slate-900 tracking-tight">
-                        {chunk.mnemonic}
-                      </p>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          Active Word:
+                        </span>
+                        <p className="text-xl font-bold text-slate-900 tracking-tight">
+                          {chunk.mnemonic}
+                        </p>
+                      </div>
                       <button
                         onClick={() => startEdit(chunk)}
-                        title="Customize mnemonic word"
+                        title="Edit active word"
                         className="opacity-0 group-hover/word:opacity-100 p-1.5 text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -167,25 +191,101 @@ export const MnemonicList: React.FC<MnemonicListProps> = ({
                 </div>
               </div>
 
-              {/* Alternative Suggestions */}
-              {chunk.alternatives.length > 0 && !isEditing && (
-                <div className="pt-3 mt-3 border-t border-slate-100">
-                  <span className="text-[11px] font-medium text-slate-400 block mb-1.5">
-                    Alternative suggestions:
+              {/* Word List for this Pair (with 'x' delete button on each) */}
+              <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    Word list ({allWords.length}):
                   </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {chunk.alternatives.map((alt, aIdx) => (
-                      <button
-                        key={aIdx}
-                        onClick={() => onSelectAlternative(chunk.pair, alt)}
-                        className="text-xs bg-[#F1F5F9] hover:bg-blue-50 text-slate-600 hover:text-[#1E3A8A] px-2.5 py-1 rounded-lg transition-colors font-medium"
-                      >
-                        {alt}
-                      </button>
-                    ))}
-                  </div>
+                  {!isAdding && (
+                    <button
+                      onClick={() => setAddingPair(chunk.pair)}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-[#1E3A8A] hover:text-blue-700 px-1.5 py-0.5 rounded hover:bg-blue-50 transition-colors"
+                      title="Add a new word to this pair"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Add word</span>
+                    </button>
+                  )}
                 </div>
-              )}
+
+                {/* Inline Add Word Input */}
+                {isAdding && (
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <input
+                      type="text"
+                      value={newWordInput}
+                      onChange={(e) => setNewWordInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddWord(chunk.pair);
+                        if (e.key === 'Escape') setAddingPair(null);
+                      }}
+                      autoFocus
+                      placeholder="Add word..."
+                      className="w-full bg-[#F9FAFB] border border-blue-300 text-xs px-2.5 py-1 rounded-lg outline-none text-[#1E3A8A]"
+                    />
+                    <button
+                      onClick={() => handleAddWord(chunk.pair)}
+                      className="p-1 bg-[#1E3A8A] text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      title="Add"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setAddingPair(null)}
+                      className="p-1 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors"
+                      title="Cancel"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Word Badges with 'x' Delete Button */}
+                <div className="flex flex-wrap gap-1.5">
+                  {allWords.map((word, wIdx) => {
+                    const isActive = word.toLowerCase() === chunk.mnemonic.toLowerCase();
+
+                    return (
+                      <div
+                        key={wIdx}
+                        className={`group/badge inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                          isActive
+                            ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-sm'
+                            : 'bg-[#F1F5F9] text-slate-700 border-slate-200 hover:bg-blue-50 hover:text-[#1E3A8A]'
+                        }`}
+                      >
+                        {/* Clicking the word selects it as the active mnemonic */}
+                        <button
+                          onClick={() => onSelectAlternative(chunk.pair, word)}
+                          title={`Select "${word}" as active word`}
+                          className="text-left font-medium outline-none"
+                        >
+                          {word}
+                        </button>
+
+                        {/* 'x' button to remove word from dictionary */}
+                        {onDeleteWordFromPair && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteWordFromPair(chunk.pair, word);
+                            }}
+                            title={`Remove "${word}" from word list`}
+                            className={`p-0.5 rounded transition-colors ${
+                              isActive
+                                ? 'hover:bg-red-500 hover:text-white text-blue-200'
+                                : 'hover:bg-red-100 hover:text-red-600 text-slate-400'
+                            }`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           );
         })}
