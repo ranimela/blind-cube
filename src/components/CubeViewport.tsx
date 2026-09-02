@@ -10,6 +10,7 @@ interface CubeViewportProps {
   activeSequence: string;
   selectedStickerId?: string | null;
   stickerColors?: Record<string, string>;
+  stickerLetters?: Record<string, string>;
   onStickerClick: (sticker: SpeffzSticker) => void;
 }
 
@@ -101,6 +102,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
   activeSequence: _activeSequence,
   selectedStickerId,
   stickerColors,
+  stickerLetters,
   onStickerClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -144,9 +146,10 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
     rendererRef.current = renderer;
-    container.replaceChildren(renderer.domElement);
+
+    container.innerHTML = '';
+    container.appendChild(renderer.domElement);
 
     // OrbitControls: Full 3-axis smooth rotation with damping
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -190,7 +193,8 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
       const isVisible = isStickerVisible(st);
       const isHighlighted = selectedStickerId === st.id;
       const color = stickerColors?.[st.id] ?? st.faceColor;
-      const texture = createStickerTexture(st.letter, color, st.pieceType, isVisible, isHighlighted);
+      const letter = stickerLetters?.[st.id] ?? st.letter;
+      const texture = createStickerTexture(letter, color, st.pieceType, isVisible, isHighlighted);
       const material = new THREE.MeshStandardMaterial({
         map: texture,
         roughness: 0.35,
@@ -247,7 +251,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
     };
   }, []);
 
-  // Update textures whenever Mode, selectedStickerId, or stickerColors change
+  // Update textures whenever Mode, selectedStickerId, stickerColors, or stickerLetters change
   useEffect(() => {
     meshesRef.current.forEach((mesh) => {
       const st = mesh.userData.sticker as SpeffzSticker;
@@ -256,7 +260,8 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
       const isVisible = isStickerVisible(st);
       const isHighlighted = selectedStickerId === st.id;
       const color = stickerColors?.[st.id] ?? st.faceColor;
-      const newTexture = createStickerTexture(st.letter, color, st.pieceType, isVisible, isHighlighted);
+      const letter = stickerLetters?.[st.id] ?? st.letter;
+      const newTexture = createStickerTexture(letter, color, st.pieceType, isVisible, isHighlighted);
 
       const mat = mesh.material as THREE.MeshStandardMaterial;
       if (mat.map) {
@@ -265,7 +270,7 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
       mat.map = newTexture;
       mat.needsUpdate = true;
     });
-  }, [mode, selectedStickerId, isStickerVisible, stickerColors]);
+  }, [mode, selectedStickerId, isStickerVisible, stickerColors, stickerLetters]);
 
   // Pointer event for Raycasting and clicking stickers without triggering on drag
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -286,7 +291,8 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
 
       if (intersects.length > 0) {
         const targetSticker = intersects[0].object.userData.sticker as SpeffzSticker;
-        setHoveredSticker(targetSticker);
+        const currentLetter = stickerLetters?.[targetSticker.id] ?? targetSticker.letter;
+        setHoveredSticker({ ...targetSticker, letter: currentLetter });
       } else {
         setHoveredSticker(null);
       }
@@ -311,8 +317,9 @@ export const CubeViewport: React.FC<CubeViewportProps> = ({
 
       if (intersects.length > 0) {
         const clickedSticker = intersects[0].object.userData.sticker as SpeffzSticker;
-        if (clickedSticker.letter && clickedSticker.pieceType !== 'center') {
-          onStickerClick(clickedSticker);
+        const currentLetter = stickerLetters?.[clickedSticker.id] ?? clickedSticker.letter;
+        if (currentLetter && clickedSticker.pieceType !== 'center') {
+          onStickerClick({ ...clickedSticker, letter: currentLetter });
         }
       }
     }

@@ -10,7 +10,7 @@ import { BlindRecallTest } from './components/BlindRecallTest';
 import { WordlistManagerModal } from './components/dictionary/WordlistManagerModal';
 import { sanitizeSpeffzSequence, parseAndChunkSequence, SINGLE_LETTER_DEFAULTS, generateDynamicDrill } from './services/mnemonicService';
 import { loadDictionary, saveDictionary, updatePairInDictionary, getDefaultDictionary } from './services/dictionaryStorage';
-import { getSolvedState, generateRandomScramble } from './utils/cubeScrambler';
+import { getSolvedState, getSolvedLetters, generateRandomScramble } from './utils/cubeScrambler';
 
 import cornersImg from './assets/corners.png';
 import edgesImg from './assets/edges.png';
@@ -25,9 +25,10 @@ export const App: React.FC = () => {
   const [isWordlistOpen, setIsWordlistOpen] = useState(false);
   const [isBlindRecallOpen, setIsBlindRecallOpen] = useState(false);
 
-  // Scramble and Cube State Management
+  // Scramble and Cube State Management (colors and physical Speffz letters)
   const [scramble, setScramble] = useState<string>('');
   const [stickerColors, setStickerColors] = useState<Record<string, string>>(() => getSolvedState());
+  const [stickerLetters, setStickerLetters] = useState<Record<string, string>>(() => getSolvedLetters());
 
   // Parse sequence into letter-pair chunks using active dictionary & overrides
   const chunks = useMemo(() => {
@@ -108,11 +109,13 @@ export const App: React.FC = () => {
     const result = generateRandomScramble(20);
     setScramble(result.scramble);
     setStickerColors(result.stickerColors);
+    setStickerLetters(result.stickerLetters);
   };
 
   const handleResetScramble = () => {
     setScramble('');
     setStickerColors(getSolvedState());
+    setStickerLetters(getSolvedLetters());
   };
 
   const handleUpdateOverride = (pair: string, customWord: string) => {
@@ -212,6 +215,7 @@ export const App: React.FC = () => {
             activeSequence={sequence}
             selectedStickerId={selectedStickerId}
             stickerColors={stickerColors}
+            stickerLetters={stickerLetters}
             onStickerClick={handleStickerClick}
           />
 

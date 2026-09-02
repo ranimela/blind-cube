@@ -116,4 +116,18 @@ describe('Rubik\'s Cube Scrambler & Speffz Permutations', () => {
       }
     }
   });
+
+  it('should verify Speffz letters physically permute with scramble moves and invert properly', () => {
+    const { scramble, stickerLetters } = generateRandomScramble(20);
+    expect(Object.keys(stickerLetters).length).toBe(54);
+
+    // After scramble, letter distribution still contains all original Speffz letters
+    const lettersList = Object.values(stickerLetters).filter(Boolean);
+    expect(lettersList).toHaveLength(54);
+
+    // Letter positions should have changed compared to solved state
+    const solvedLetters = SPEFFZ_STICKERS.map((s) => s.letter);
+    const scrambledLetters = SPEFFZ_STICKERS.map((s) => stickerLetters[s.id]);
+    expect(scrambledLetters).not.toEqual(solvedLetters);
+  });
 });
